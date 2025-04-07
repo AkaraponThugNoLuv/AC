@@ -28,7 +28,7 @@ blackout.Active = true
 blackout.Selectable = true
 blackout.Parent = gui
 
--- ปุ่ม Toggle ธรรมดา
+-- ปุ่ม Toggle UI
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleButton"
 toggleButton.Size = UDim2.new(0, 100, 0, 40)
@@ -41,7 +41,7 @@ toggleButton.TextSize = 18
 toggleButton.ZIndex = 10001
 toggleButton.Parent = gui
 
--- ScrollingFrame สำหรับแสดงรายการ
+-- ScrollingFrame สำหรับรายการไอเทม
 local scroll = Instance.new("ScrollingFrame")
 scroll.Name = "Scroll"
 scroll.Size = UDim2.new(0.8, 0, 0.7, 0)
@@ -54,7 +54,7 @@ scroll.ZIndex = 10000
 scroll.ClipsDescendants = true
 scroll.Parent = blackout
 
--- UIListLayout จัดเรียงแนวตั้งแบบตรงกลาง
+-- Layout แนวตั้ง
 local layout = Instance.new("UIListLayout")
 layout.Padding = UDim.new(0, 5)
 layout.SortOrder = Enum.SortOrder.LayoutOrder
@@ -91,7 +91,7 @@ statusLabel.TextYAlignment = Enum.TextYAlignment.Center
 statusLabel.ZIndex = 10000
 statusLabel.Parent = scroll
 
--- ฟังก์ชันสำหรับโหลดรายการ
+-- โหลดรายการไอเทมมาแสดง
 local function updateScrollItems()
     for _, child in pairs(scroll:GetChildren()) do
         if child:IsA("TextLabel") and child ~= statusLabel then
@@ -156,10 +156,12 @@ local function updateScrollItems()
     end
 end
 
--- ฟังก์ชันสำหรับอัพเดทคำอธิบาย
+-- ฟังก์ชันอัพเดทคำอธิบาย
 local RAMAccount, SettingAcc = loadstring(game:HttpGet('https://raw.githubusercontent.com/ic3w0lf22/Roblox-Account-Manager/master/RAMAccount.lua'))()
 local MyAccount = RAMAccount.new(player.Name)
 local AutoSetDescription = true
+local ErrorShown = false
+
 local function updateDescription()
     local items = {}
     local sourceFrame = player:FindFirstChild("PlayerGui")
@@ -181,38 +183,40 @@ local function updateDescription()
     end
 
     local descriptionText = table.concat(items, ", ")
-    -- อัพเดท description ตามรายการที่ได้
+
     if MyAccount then
         local setDescriptionSuccess = MyAccount:SetDescription(descriptionText)
         if setDescriptionSuccess ~= false then
             print("SET")
-        else
+        elseif not ErrorShown then
             messagebox("You Not Open Allow Modify Methods", "Alert", 0)
+            ErrorShown = true
             AutoSetDescription = false
         end
     else
-        messagebox("Can't Connect To RAM", "Alert", 0)
+        if not ErrorShown then
+            messagebox("Can't Connect To RAM", "Alert", 0)
+            ErrorShown = true
+        end
         AutoSetDescription = false
     end
 end
 
+-- ลูปอัพเดทคำอธิบายทุก 10 วินาที
 spawn(function()
     while true do
         if AutoSetDescription then
             updateDescription()
         else
             print("AutoSetDescription ปิดอยู่ พยายามเปิดใหม่...")
-            MyAccount = RAMAccount.new(game:GetService('Players').LocalPlayer.Name)
+            MyAccount = RAMAccount.new(player.Name)
             AutoSetDescription = true
         end
         wait(10)
     end
 end)
 
--- อัปเดตครั้งแรก
-updateScrollItems()
-
--- เช็คข้อมูลใหม่ทุก 1 วินาที
+-- ลูปอัพเดทรายการไอเทมทุก 1 วินาที
 spawn(function()
     while true do
         updateScrollItems()
@@ -220,20 +224,21 @@ spawn(function()
     end
 end)
 
--- ตั้งค่า FPS ทันทีเมื่อเริ่มต้น (จำกัด FPS ให้เป็น 5 เมื่อเริ่ม)
+-- ตั้งค่า FPS ทันทีเมื่อเริ่มต้น
 setfpscap(5)
 
--- ตั้งค่า FPS เมื่อเปิดปิด UI
+-- Toggle UI และเปลี่ยน FPS
 local visible = true
 toggleButton.MouseButton1Click:Connect(function()
     visible = not visible
     blackout.Visible = visible
 
-    -- เมื่อเปิด UI
     if visible then
-        setfpscap(5)  -- ตั้งค่า FPS เป็น 5 เมื่อเปิด UI
+        setfpscap(5)
     else
-        -- เมื่อปิด UI
-        setfpscap(30)  -- ตั้งค่า FPS เป็น 30 เมื่อปิด UI
+        setfpscap(30)
     end
 end)
+
+-- อัพเดทรายการครั้งแรก
+updateScrollItems()
