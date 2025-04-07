@@ -189,7 +189,7 @@ local function updateDescription()
         if setDescriptionSuccess ~= false then
             print("SET")
         elseif not ErrorShown then
-            messagebox("You Not Open Allow Modify Methods", "Alert", 0)
+            --messagebox("You Not Open Allow Modify Methods", "Alert", 0)
             ErrorShown = true
             AutoSetDescription = false
         end
