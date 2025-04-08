@@ -1,3 +1,4 @@
+wait(10)
 local player = game:GetService("Players").LocalPlayer
 local coreGui = game:GetService("CoreGui")
 local TweenService = game:GetService("TweenService")
